@@ -5,6 +5,7 @@ dist/
 .venv/
 .coverage
 .python-version
+.env
 coverage.xml
 .pytest_cache/
 .vscode/
