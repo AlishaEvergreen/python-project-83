@@ -2,7 +2,7 @@
 authors = [
     {name = "Alina Makarovskaya", email = "makarovskaya1307@gmail.com"},
 ]
-requires-python = "<4.0,>=3.12"
+requires-python = ">=3.11"
 name = "hexlet-code"
 version = "0.1.0"
 description = "Project #3 - Page Analyzer"
