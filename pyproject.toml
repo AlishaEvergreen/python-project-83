@@ -9,6 +9,7 @@ description = "Project #3 - Page Analyzer"
 readme = "README.md"
 dependencies = [
     "flask>=3.1.0",
+    "gunicorn>=23.0.0",
 ]
 
 [dependency-groups]
