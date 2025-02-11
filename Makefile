@@ -9,8 +9,6 @@ dev:
 lint:
 	uv run ruff check page_analyzer
 
-check: lint
-
 format-app:
 	uv run ruff check --fix page_analyzer/app.py
 
