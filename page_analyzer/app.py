@@ -11,7 +11,7 @@ from flask import (
     url_for,
 )
 
-from page_analyzer.repository import UrlsRepository, get_db
+from page_analyzer.repository import UrlsRepository, get_db_connection
 from page_analyzer.utils import normalize_url, validate
 
 load_dotenv()
@@ -19,9 +19,6 @@ load_dotenv()
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
-
-
-repo = UrlsRepository(get_db(app))
 
 
 @app.route("/")
@@ -45,6 +42,9 @@ def check_url():
     if error:
         flash(error, 'error')
         return redirect(url_for('home'))
+
+    with get_db_connection() as conn:
+        repo = UrlsRepository(conn)
 
     if repo.get_url_by_name(normalized_url):
         flash("Страница уже существует", "warning")
