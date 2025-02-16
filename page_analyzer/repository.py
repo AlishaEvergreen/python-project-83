@@ -1,6 +1,6 @@
-import psycopg2
 from datetime import datetime
-# from psycopg2.extras import NamedTupleCursor
+
+import psycopg2
 
 
 def get_db(app):

@@ -4,15 +4,15 @@ from dotenv import load_dotenv
 from flask import (
     Flask,
     flash,
+    get_flashed_messages,
     redirect,
     render_template,
     request,
     url_for,
-    get_flashed_messages
 )
-from page_analyzer.repository import get_db, UrlsRepository
-from page_analyzer.utils import normalize_url, validate
 
+from page_analyzer.repository import UrlsRepository, get_db
+from page_analyzer.utils import normalize_url, validate
 
 load_dotenv()
 
