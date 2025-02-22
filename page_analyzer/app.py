@@ -36,7 +36,25 @@ def home():
 def show_url(id):
     repo = UrlsRepository()
     url = repo.get_url_by_id(id)
-    return render_template('show.html', url=url)
+    messages = get_flashed_messages(with_categories=True)
+
+    return render_template(
+        'url.html',
+        url=url,
+        messages=messages)
+
+
+@app.route('/urls')
+def show_urls():
+    repo = UrlsRepository()
+    urls = repo.get_entities()
+    messages = get_flashed_messages(with_categories=True)
+
+    return render_template(
+        'urls.html',
+        urls=urls,
+        messages=messages
+        )
 
 
 @app.route('/urls', methods=['POST'])
@@ -49,13 +67,14 @@ def create_url():
     repo = UrlsRepository()
 
     if error:
-        flash(error, 'error')
+        flash(error, 'danger')
         return redirect(url_for('home'))
 
-    if repo.get_url_by_name(normalized_url):
-        flash("Страница уже существует", "warning")
-        return redirect(url_for('home'))
+    existing_url = repo.get_url_by_name(normalized_url)
+    if existing_url:
+        flash("Страница уже существует", "info")
+        return redirect(url_for('show_url', id=existing_url['id']))
 
-    repo.save_url({'url': normalized_url})
+    url_id = repo.save_url({'url': normalized_url})
     flash('Страница успешно добавлена', 'success')
-    return redirect(url_for('home'))
+    return redirect(url_for('show_url', id=url_id))
