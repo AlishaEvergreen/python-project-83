@@ -11,7 +11,7 @@ from flask import (
     url_for,
 )
 
-from page_analyzer.repository import UrlsRepository, get_db_connection
+from page_analyzer.repository import UrlsRepository
 from page_analyzer.utils import normalize_url, validate
 
 load_dotenv()
@@ -27,29 +27,35 @@ def home():
 
     return render_template(
         'index.html',
-        url={'id': '', 'name': '', 'created_at': ''},
+        url={},
         messages=messages
     )
 
 
+@app.route('/urls/<int:id>')
+def show_url(id):
+    repo = UrlsRepository()
+    url = repo.get_url_by_id(id)
+    return render_template('show.html', url=url)
+
+
 @app.route('/urls', methods=['POST'])
-def check_url():
+def create_url():
     url_data = request.form.get('url', '').strip()
 
     error = validate(url_data)
     normalized_url = normalize_url(url_data)
 
+    repo = UrlsRepository()
+
     if error:
         flash(error, 'error')
         return redirect(url_for('home'))
-
-    with get_db_connection() as conn:
-        repo = UrlsRepository(conn)
 
     if repo.get_url_by_name(normalized_url):
         flash("Страница уже существует", "warning")
         return redirect(url_for('home'))
 
-    repo.save({'url': normalized_url})
+    repo.save_url({'url': normalized_url})
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('home'))
