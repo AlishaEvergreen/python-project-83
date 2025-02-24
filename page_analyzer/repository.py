@@ -55,6 +55,22 @@ class UrlsRepository(BaseRepository):
 
 
 class UrlChecksRepository(BaseRepository):
+    def get_urls_with_last_check(self):
+        query = """
+        SELECT u.id, u.name, c.status_code, c.created_at
+        FROM urls AS u
+        LEFT JOIN (
+            SELECT DISTINCT ON (url_id) url_id, status_code, created_at
+            FROM url_checks
+            ORDER BY url_id, created_at DESC
+        ) AS c ON u.id = c.url_id
+        ORDER BY u.id DESC;
+        """
+        with self._connect() as conn:
+            with conn.cursor(cursor_factory=RealDictCursor) as cur:
+                cur.execute(query)
+                return cur.fetchall()
+
     def get_checks_by_id(self, url_id):
         with self._connect() as conn:
             with conn.cursor(cursor_factory=RealDictCursor) as cur:

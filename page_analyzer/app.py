@@ -20,6 +20,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
 
+urls_repo = UrlsRepository()
+checks_repo = UrlChecksRepository()
+
 
 @app.route("/")
 def home():
@@ -34,10 +37,7 @@ def home():
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    urls_repo = UrlsRepository()
     url_data = urls_repo.get_url_data_by_id(id)
-
-    checks_repo = UrlChecksRepository()
     checks_data = checks_repo.get_checks_by_id(id)
 
     messages = get_flashed_messages(with_categories=True)
@@ -51,13 +51,13 @@ def show_url(id):
 
 @app.route('/urls')
 def show_urls():
-    repo = UrlsRepository()
-    urls = repo.get_entities()
+    last_checks = checks_repo.get_urls_with_last_check()
+
     messages = get_flashed_messages(with_categories=True)
 
     return render_template(
         'urls.html',
-        urls=urls,
+        checks=last_checks,
         messages=messages
         )
 
@@ -69,24 +69,21 @@ def create_url():
     error = validate(url_data)
     normalized_url = normalize_url(url_data)
 
-    repo = UrlsRepository()
-
     if error:
         flash(error, 'danger')
         return redirect(url_for('home'))
 
-    existing_url = repo.get_url_data_by_name(normalized_url)
+    existing_url = urls_repo.get_url_data_by_name(normalized_url)
     if existing_url:
         flash("Страница уже существует", "info")
         return redirect(url_for('show_url', id=existing_url['id']))
 
-    url_id = repo.save_url({'url': normalized_url})
+    url_id = urls_repo.save_url({'url': normalized_url})
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('show_url', id=url_id))
 
 
 @app.route('/urls/<int:id>/checks', methods=['POST'])
 def check_url(id):
-    repo = UrlChecksRepository()
-    repo.save_url_check({'id': id})
+    checks_repo.save_url_check({'id': id})
     return redirect(url_for('show_url', id=id))
