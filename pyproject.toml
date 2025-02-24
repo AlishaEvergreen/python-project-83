@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Project #3 - Page Analyzer"
 readme = "README.md"
 dependencies = [
+    "beautifulsoup4>=4.13.3",
     "flask>=3.1.0",
     "gunicorn>=23.0.0",
     "psycopg2-binary>=2.9.10",
