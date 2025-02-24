@@ -11,7 +11,7 @@ from flask import (
     url_for,
 )
 
-from page_analyzer.repository import UrlsRepository
+from page_analyzer.repository import UrlChecksRepository, UrlsRepository
 from page_analyzer.utils import normalize_url, validate
 
 load_dotenv()
@@ -34,13 +34,18 @@ def home():
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    repo = UrlsRepository()
-    url = repo.get_url_by_id(id)
+    urls_repo = UrlsRepository()
+    url_data = urls_repo.get_url_data_by_id(id)
+
+    checks_repo = UrlChecksRepository()
+    checks_data = checks_repo.get_checks_by_id(id)
+
     messages = get_flashed_messages(with_categories=True)
 
     return render_template(
         'url.html',
-        url=url,
+        url=url_data,
+        checks=checks_data,
         messages=messages)
 
 
@@ -70,7 +75,7 @@ def create_url():
         flash(error, 'danger')
         return redirect(url_for('home'))
 
-    existing_url = repo.get_url_by_name(normalized_url)
+    existing_url = repo.get_url_data_by_name(normalized_url)
     if existing_url:
         flash("Страница уже существует", "info")
         return redirect(url_for('show_url', id=existing_url['id']))
@@ -78,3 +83,10 @@ def create_url():
     url_id = repo.save_url({'url': normalized_url})
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('show_url', id=url_id))
+
+
+@app.route('/urls/<int:id>/checks', methods=['POST'])
+def check_url(id):
+    repo = UrlChecksRepository()
+    repo.save_url_check({'id': id})
+    return redirect(url_for('show_url', id=id))
