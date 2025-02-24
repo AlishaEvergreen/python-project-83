@@ -83,7 +83,7 @@ class UrlChecksRepository(BaseRepository):
                             )
                 return cur.fetchall()
 
-    def save_url_check(self, url):
+    def save_url_check(self, id, status_code):
         created_at = datetime.now().strftime('%Y-%m-%d')
 
         with self._connect() as conn:
@@ -95,7 +95,7 @@ class UrlChecksRepository(BaseRepository):
                     VALUES (%s, %s, %s, %s, %s, %s)
                     RETURNING id
                     """,
-                    (url['id'], 0, '', '', '', created_at)
+                    (id, status_code, '', '', '', created_at)
                     )
                 url_check_id = cur.fetchone()[0]
             conn.commit()

@@ -1,4 +1,5 @@
 import os
+import requests
 
 from dotenv import load_dotenv
 from flask import (
@@ -84,5 +85,15 @@ def create_url():
 
 @app.route('/urls/<int:id>/checks', methods=['POST'])
 def check_url(id):
-    checks_repo.save_url_check({'id': id})
+    url = urls_repo.get_url_data_by_id(id)
+
+    try:
+        response = requests.get(url['name'], timeout=10)
+        response.raise_for_status()
+        status_code = response.status_code
+        checks_repo.save_url_check(id, status_code)
+        flash("Страница успешно проверена", "success")
+    except requests.exceptions.RequestException:
+        flash("Произошла ошибка при проверке", "danger")
+
     return redirect(url_for('show_url', id=id))
