@@ -37,14 +37,19 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for check in checks %}
+                            {% for url in urls %}
                                 <tr>
-                                    <td>{{ check.id }}</td>
+                                    <td>{{ url.id }}</td>
                                     <td>
-                                        <a href="{{ url_for('show_url', id=check.id) }}">{{ check.name }}</a>
+                                        <a href="{{ url_for('show_url', id=url.id) }}">{{ url.name }}</a>
                                     </td>
-                                    <td>{{ check.created_at }}</td>
-                                    <td>{{ check.status_code }}</td>
+                                    {% if url.created_at %}
+                                      <td>{{ url.created_at }}</td>
+                                      <td>{{ url.status_code }}</td>
+                                    {% else %}
+                                      <td></td>
+                                      <td></td>
+                                    {% endif %}
                                 </tr>
                             {% endfor %}
                         </tbody>

@@ -51,13 +51,12 @@ def show_url(id):
 
 @app.route('/urls')
 def show_urls():
-    last_checks = checks_repo.get_urls_with_last_check()
-
+    urls = checks_repo.get_urls_with_last_check()
     messages = get_flashed_messages(with_categories=True)
 
     return render_template(
         'urls.html',
-        checks=last_checks,
+        urls=urls,
         messages=messages
         )
 
