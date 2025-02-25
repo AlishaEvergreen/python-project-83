@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import (
     Flask,
+    abort,
     flash,
     get_flashed_messages,
     redirect,
@@ -26,6 +27,11 @@ urls_repo = UrlsRepository()
 checks_repo = UrlChecksRepository()
 
 
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('404.html'), 404
+
+
 @app.route("/")
 def home():
     messages = get_flashed_messages(with_categories=True)
@@ -40,6 +46,10 @@ def home():
 @app.route('/urls/<int:id>')
 def show_url(id):
     url_data = urls_repo.get_url_data_by_id(id)
+
+    if not url_data:
+        abort(404)
+
     checks_data = checks_repo.get_checks_by_id(id)
 
     messages = get_flashed_messages(with_categories=True)
