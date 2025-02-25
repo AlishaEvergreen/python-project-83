@@ -96,7 +96,7 @@ class UrlChecksRepository(BaseRepository):
                     RETURNING id
                     """,
                     (id, status_code, h1, title, description, created_at)
-                    )
+                )
                 url_check_id = cur.fetchone()[0]
             conn.commit()
 

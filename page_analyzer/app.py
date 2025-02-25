@@ -36,11 +36,7 @@ def not_found(error):
 def home():
     messages = get_flashed_messages(with_categories=True)
 
-    return render_template(
-        'index.html',
-        url={},
-        messages=messages
-    )
+    return render_template('index.html', url={}, messages=messages)
 
 
 @app.route('/urls/<int:id>')
@@ -51,14 +47,14 @@ def show_url(id):
         abort(404)
 
     checks_data = checks_repo.get_checks_by_id(id)
-
     messages = get_flashed_messages(with_categories=True)
 
     return render_template(
-        'url.html',
+        'layout_url.html',
         url=url_data,
         checks=checks_data,
-        messages=messages)
+        messages=messages
+    )
 
 
 @app.route('/urls')
@@ -66,17 +62,12 @@ def show_urls():
     urls = checks_repo.get_urls_with_last_check()
     messages = get_flashed_messages(with_categories=True)
 
-    return render_template(
-        'urls.html',
-        urls=urls,
-        messages=messages
-        )
+    return render_template('layout_urls.html', urls=urls, messages=messages)
 
 
 @app.route('/urls', methods=['POST'])
 def create_url():
     url_data = request.form.get('url', '').strip()
-
     error = validate(url_data)
     normalized_url = normalize_url(url_data)
 
