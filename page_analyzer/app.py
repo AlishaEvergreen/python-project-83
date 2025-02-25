@@ -73,7 +73,7 @@ def create_url():
 
     if error:
         flash(error, 'danger')
-        return redirect(url_for('home'))
+        return render_template('index.html'), 422
 
     existing_url = urls_repo.get_url_data_by_name(normalized_url)
     if existing_url:
