@@ -12,13 +12,15 @@
       {% include "navbar.html" %}
     </header>
 
-    {% if messages %}
-      <div class="flashes">
-        {% for category, message in messages %}
-        <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
-        {% endfor %}
-      </div>
-    {% endif %}
+    {% block messages %}
+      {% if messages %}
+        <div class="flashes">
+          {% for category, message in messages %}
+          <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endblock %}
 
     <main class="flex-grow-1">
       <div class="container-lg mt-4">

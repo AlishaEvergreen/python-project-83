@@ -11,6 +11,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    session,
     url_for,
 )
 
@@ -34,9 +35,15 @@ def not_found(error):
 
 @app.route("/")
 def home():
+    error = session.pop('error', None)
     messages = get_flashed_messages(with_categories=True)
 
-    return render_template('index.html', url={}, messages=messages)
+    return render_template(
+        'index.html',
+        url={},
+        error=error,
+        messages=messages
+    )
 
 
 @app.route('/urls/<int:id>')
@@ -72,8 +79,8 @@ def create_url():
     normalized_url = normalize_url(url_data)
 
     if error:
-        flash(error, 'danger')
-        return render_template('index.html'), 422
+        session['error'] = error
+        return render_template('index.html', url=url_data, error=error), 422
 
     existing_url = urls_repo.get_url_data_by_name(normalized_url)
     if existing_url:

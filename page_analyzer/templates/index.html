@@ -1,5 +1,18 @@
 {% extends "layout.html" %}
 
+{% block messages %}
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+  {% if messages %}
+    <div class="flashes">
+      {% for category, message in messages %}
+      <div class="alert alert-{{ category }}" role="alert">{{ message }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-12 col-md-10 col-lg-8 mx-auto border rounded-1 bg-light p-5">
