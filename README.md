@@ -20,20 +20,23 @@ It's a Flask-based web application demonstrating core web development principles
 
 ## Installation
 
-### 📂 Clone the Repository:
+### 📂 Clone the repository:
 ```
 git clone https://github.com/AlishaEvergreen/python-project-83.git page-analyzer
 ```
 
-### 🚀 Install Dependencies and Set Up the Project: 
+### 🚀 Install dependencies and set up the project: 
 ```
 make build
 ```
-### ⚙️ Start the Development Server: 
+
+## Launching
+
+### ⚙️ Start the development server: 
 ```
 make dev
 ```
-### 🌐 Start the Production Server: 
+### 🌐 Start the rroduction server: 
 ```
 make start
 ```
@@ -50,14 +53,13 @@ cd page-analyzer
 - Select Download ZIP.
 - Extract the archive and navigate to the project folder.
 
-### Create a Database
+### Create a database
 - Ensure PostgreSQL is installed on your system.
 - Create a new database: ```createdb database_name```
 - Configure the database connection in the .env file (see below).
 
-### Add .env File
-- Create a .env file in the root folder of the project.
-- Add the following variables to it:
+### Add .env file
+- Create .env file in the root folder of the project. Add the following variables to it:
 ```
 DATABASE_URL=postgresql://username:password@localhost:5432/page_analyzer
 SECRET_KEY=your_secret_key_here
@@ -65,4 +67,4 @@ SECRET_KEY=your_secret_key_here
 Replace username, password, and your_secret_key_here with your own values.
 
 ## ❤️ Acknowledgements
-### Thanks for stopping by, buddy! If you find this tool helpful, don't forget to give it a ⭐ on GitHub!
+Thanks for stopping by, buddy! If you find this tool helpful, don't forget to give it a ⭐ on GitHub!
