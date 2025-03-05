@@ -6,59 +6,59 @@
 ### Production Build:
 [![Live Demo](https://img.shields.io/badge/Live_Demo-Available-blue)](https://python-project-83-kqoq.onrender.com)
 
-## Page Analyzer
+### Page Analyzer
 
 **Page Analyzer** is a website that analyzes specified pages for SEO suitability, similar to [PageSpeed Insights](https://pagespeed.web.dev/).  
 It's a Flask-based web application demonstrating core web development principles, including MVC architecture, routing, database interaction, and automated deployment using render.com.
 
-## Requirements
+### Requirements
 ```
 - Python 3.11+
 - PostgreSQL database (to store analyzed data)
 - Make (for running commands)
 ```
 
-## Installation
+### Installation
 
-### 📂 Clone the repository:
+#### 📂 Clone the repository:
 ```
 git clone https://github.com/AlishaEvergreen/python-project-83.git page-analyzer
 ```
 
-### 🚀 Install dependencies and set up the project: 
+#### 🚀 Install dependencies and set up the project: 
 ```
 make build
 ```
 
-## Launching
+### Launching
 
-### ⚙️ Start the development server: 
+#### ⚙️ Start the development server: 
 ```
 make dev
 ```
-### 🌐 Start the rroduction server: 
+#### 🌐 Start the rroduction server: 
 ```
 make start
 ```
 
-## Additional Setup
+### Additional Setup
 
-### After cloning the repository, navigate to the project folder using the following command:
+#### After cloning the repository, navigate to the project folder using the following command:
 ```
 cd page-analyzer
 ```
-### If you don’t have Git installed, you can download the project as a ZIP archive:
+#### If you don’t have Git installed, you can download the project as a ZIP archive:
 - Go to the repository page: [python-project-83](https://github.com/AlishaEvergreen/python-project-83).
 - Click the Code button (green button on the right).
 - Select Download ZIP.
 - Extract the archive and navigate to the project folder.
 
-### Create a database
+#### Create a database
 - Ensure PostgreSQL is installed on your system.
 - Create a new database: ```createdb database_name```
 - Configure the database connection in the .env file (see below).
 
-### Add .env file
+#### Add .env file
 - Create .env file in the root folder of the project. Add the following variables to it:
 ```
 DATABASE_URL=postgresql://username:password@localhost:5432/page_analyzer
@@ -66,5 +66,5 @@ SECRET_KEY=your_secret_key_here
 ```
 Replace username, password, and your_secret_key_here with your own values.
 
-## ❤️ Acknowledgements
+### ❤️ Acknowledgements
 Thanks for stopping by, buddy! If you find this tool helpful, don't forget to give it a ⭐ on GitHub!
