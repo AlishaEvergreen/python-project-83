@@ -72,7 +72,7 @@ def show_urls():
     return render_template('layout_urls.html', urls=urls, messages=messages)
 
 
-@app.route('/urls', methods=['POST'])
+@app.post('/urls')
 def create_url():
     url_data = request.form.get('url', '').strip()
     error = validate(url_data)
@@ -92,7 +92,7 @@ def create_url():
     return redirect(url_for('show_url', id=url_id))
 
 
-@app.route('/urls/<int:id>/checks', methods=['POST'])
+@app.post('/urls/<int:id>/checks')
 def check_url(id):
     url = urls_repo.get_url_data_by_id(id)
 
