@@ -25,7 +25,7 @@
 
     <div class="mb-3 mt-3">
         <h2>Проверки</h2>
-        <form action="/urls/{{ url.id }}/checks" method="post" class="d-flex justify-content-start">
+        <form action="{{ url_for('check_url', id=url.id) }}" method="post" class="d-flex justify-content-start">
             <input type="submit" value="Запустить проверку" class="btn btn-secondary btn-md">
         </form>
     </div>
