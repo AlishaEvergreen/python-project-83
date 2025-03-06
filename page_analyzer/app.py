@@ -23,8 +23,9 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
 
-urls_repo = UrlsRepository()
-checks_repo = UrlChecksRepository()
+DATABASE_URL = app.config["DATABASE_URL"]
+URLS_REPO = UrlsRepository(DATABASE_URL)
+CHECKS_REPO = UrlChecksRepository(DATABASE_URL)
 
 
 @app.errorhandler(404)
@@ -47,12 +48,12 @@ def home():
 
 @app.route('/urls/<int:id>')
 def show_url(id):
-    url_data = urls_repo.get_url_data_by_id(id)
+    url_data = URLS_REPO.get_url_data_by_id(id)
 
     if not url_data:
         abort(404)
 
-    checks_data = checks_repo.get_checks_by_id(id)
+    checks_data = CHECKS_REPO.get_checks_by_id(id)
     messages = get_flashed_messages(with_categories=True)
 
     return render_template(
@@ -65,7 +66,7 @@ def show_url(id):
 
 @app.route('/urls')
 def show_urls():
-    urls = checks_repo.get_urls_with_last_check()
+    urls = CHECKS_REPO.get_urls_with_last_check()
     messages = get_flashed_messages(with_categories=True)
 
     return render_template('layout_urls.html', urls=urls, messages=messages)
@@ -81,19 +82,19 @@ def create_url():
         session['error'] = error
         return render_template('index.html', url=url_data, error=error), 422
 
-    existing_url = urls_repo.get_url_data_by_name(normalized_url)
+    existing_url = URLS_REPO.get_url_data_by_name(normalized_url)
     if existing_url:
         flash("Страница уже существует", "info")
         return redirect(url_for('show_url', id=existing_url['id']))
 
-    url_id = urls_repo.save_url({'url': normalized_url})
+    url_id = URLS_REPO.save_url({'url': normalized_url})
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('show_url', id=url_id))
 
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
-    url = urls_repo.get_url_data_by_id(id)
+    url = URLS_REPO.get_url_data_by_id(id)
 
     try:
         response = requests.get(url['name'], timeout=10)
@@ -101,7 +102,7 @@ def check_url(id):
 
         h1, title, description = parse_html_metadata(response.text)
 
-        checks_repo.save_url_check(
+        CHECKS_REPO.save_url_check(
             id,
             response.status_code,
             h1,

@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 
 import psycopg2
@@ -7,8 +6,7 @@ from psycopg2.extras import RealDictCursor
 
 
 class BaseRepository:
-    def __init__(self):
-        database_url = os.getenv("DATABASE_URL")
+    def __init__(self, database_url):
         self.connection_params = self._parse_database_url(database_url)
 
     def _parse_database_url(self, database_url):
