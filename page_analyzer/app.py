@@ -15,7 +15,7 @@ from flask import (
 )
 
 from page_analyzer.repository import UrlChecksRepository, UrlsRepository
-from page_analyzer.utils import normalize_url, validate, parse_html_metadata
+from page_analyzer.utils import normalize_url, parse_html_metadata, validate
 
 load_dotenv()
 
