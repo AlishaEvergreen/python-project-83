@@ -1,6 +1,7 @@
 from urllib.parse import urlparse
 
 import validators
+from bs4 import BeautifulSoup
 
 
 def normalize_url(url):
@@ -13,3 +14,17 @@ def validate(url):
         return 'URL превышает 255 символов'
     if not validators.url(url):
         return 'Некорректный URL'
+
+
+def parse_html_metadata(html_content):
+    soup = BeautifulSoup(html_content, "html.parser")
+
+    h1_tag = soup.find("h1")
+    title_tag = soup.title
+    meta_desc = soup.find("meta", attrs={"name": "description"})
+
+    h1 = h1_tag.text if h1_tag else ""
+    title = title_tag.text if title_tag else ""
+    description = meta_desc["content"] if meta_desc else ""
+
+    return h1, title, description

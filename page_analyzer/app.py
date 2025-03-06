@@ -1,7 +1,6 @@
 import os
 
 import requests
-from bs4 import BeautifulSoup
 from dotenv import load_dotenv
 from flask import (
     Flask,
@@ -16,7 +15,7 @@ from flask import (
 )
 
 from page_analyzer.repository import UrlChecksRepository, UrlsRepository
-from page_analyzer.utils import normalize_url, validate
+from page_analyzer.utils import normalize_url, validate, parse_html_metadata
 
 load_dotenv()
 
@@ -99,18 +98,16 @@ def check_url(id):
     try:
         response = requests.get(url['name'], timeout=10)
         response.raise_for_status()
-        status_code = response.status_code
 
-        soup = BeautifulSoup(response.text, "html.parser")
-        h1_tag = soup.find("h1")
-        title_tag = soup.title
-        meta_desc = soup.find("meta", attrs={"name": "description"})
+        h1, title, description = parse_html_metadata(response.text)
 
-        h1 = h1_tag.text if h1_tag else ""
-        title = title_tag.text if title_tag else ""
-        description = meta_desc["content"] if meta_desc else ""
-
-        checks_repo.save_url_check(id, status_code, h1, title, description)
+        checks_repo.save_url_check(
+            id,
+            response.status_code,
+            h1,
+            title,
+            description
+        )
         flash("Страница успешно проверена", "success")
     except requests.exceptions.RequestException:
         flash("Произошла ошибка при проверке", "danger")
