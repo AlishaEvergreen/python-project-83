@@ -30,11 +30,13 @@ CHECKS_REPO = UrlChecksRepository(DATABASE_URL)
 
 @app.errorhandler(404)
 def not_found(error):
+    """Renders a 404 error page."""
     return render_template('404.html'), 404
 
 
 @app.route("/")
 def home():
+    """Renders the home page with a form for adding URLs."""
     error = session.pop('error', None)
     messages = get_flashed_messages(with_categories=True)
 
@@ -48,6 +50,7 @@ def home():
 
 @app.route('/urls/<int:id>')
 def show_url(id):
+    """Renders a page with details for a specific URL."""
     url_data = URLS_REPO.get_url_data_by_id(id)
 
     if not url_data:
@@ -66,6 +69,7 @@ def show_url(id):
 
 @app.route('/urls')
 def show_urls():
+    """Render a page with a list of all URLs and their latest checks."""
     urls = CHECKS_REPO.get_urls_with_last_check()
     messages = get_flashed_messages(with_categories=True)
 
@@ -74,6 +78,7 @@ def show_urls():
 
 @app.post('/urls')
 def create_url():
+    """Handles URL submission and validation."""
     url_data = request.form.get('url', '').strip()
     error = validate(url_data)
     normalized_url = normalize_url(url_data)
@@ -94,6 +99,7 @@ def create_url():
 
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
+    """Performs a check on a URL and saves the results."""
     url = URLS_REPO.get_url_data_by_id(id)
 
     try:

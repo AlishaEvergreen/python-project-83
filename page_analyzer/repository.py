@@ -6,6 +6,7 @@ from psycopg2.extras import RealDictCursor
 
 
 class DatabaseConnection:
+    """Manages database connection lifecycle (open, close)."""
     def __init__(self, database_url):
         self.connection_params = extensions.parse_dsn(database_url)
         self.conn = None
@@ -21,6 +22,7 @@ class DatabaseConnection:
 
 
 class CRUDClient:
+    """Executes SQL queries and fetches results."""
     def __init__(self, conn):
         self.conn = conn
 
@@ -28,6 +30,20 @@ class CRUDClient:
         self, query, params=None, fetch_one=False,
         fetch_all=False, fetch_id=False, commit=False,
     ):
+        """
+        Executes a SQL query and returns the result.
+
+        Args:
+            query (str): SQL query to execute.
+            params (tuple, optional): Query parameters.
+            fetch_one (bool): Return a single row.
+            fetch_all (bool): Return all rows.
+            fetch_id (bool): Return the ID of the inserted row.
+            commit (bool): Commit the transaction if True.
+
+        Returns:
+            Result of the query (dict, list, or int).
+        """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, params or ())
 
@@ -46,10 +62,12 @@ class CRUDClient:
 
 
 class UrlsRepository:
+    """Repository for managing URLs in the database."""
     def __init__(self, database_url):
         self.database_url = database_url
 
     def get_entities(self):
+        """Fetches all URLs, ordered by ID and creation date."""
         with DatabaseConnection(self.database_url) as conn:
             return CRUDClient(conn).execute(
                 """
@@ -60,6 +78,7 @@ class UrlsRepository:
             )
 
     def get_url_data_by_id(self, id):
+        """Fetches URL data by its ID."""
         with DatabaseConnection(self.database_url) as conn:
             return CRUDClient(conn).execute(
                 "SELECT * FROM urls WHERE id = %s",
@@ -68,6 +87,7 @@ class UrlsRepository:
             )
 
     def get_url_data_by_name(self, url):
+        """Fetches URL data by its name."""
         with DatabaseConnection(self.database_url) as conn:
             return CRUDClient(conn).execute(
                 "SELECT * FROM urls WHERE name = %s",
@@ -76,6 +96,7 @@ class UrlsRepository:
             )
 
     def save_url(self, url):
+        """Saves a new URL and return its ID."""
         created_at = date.today()
         with DatabaseConnection(self.database_url) as conn:
             return CRUDClient(conn).execute(
@@ -91,10 +112,12 @@ class UrlsRepository:
 
 
 class UrlChecksRepository:
+    """Repository for managing URL checks in the database."""
     def __init__(self, database_url):
         self.database_url = database_url
 
     def get_urls_with_last_check(self):
+        """Fetches URLs with their latest check data."""
         query_urls = "SELECT id, name FROM urls ORDER BY id DESC"
         query_checks = """
         SELECT DISTINCT ON (url_id) url_id, status_code, created_at
@@ -115,6 +138,7 @@ class UrlChecksRepository:
         return urls
 
     def get_checks_by_id(self, url_id):
+        """Fetches all checks for a URL by its ID."""
         with DatabaseConnection(self.database_url) as conn:
             return CRUDClient(conn).execute(
                 """
@@ -126,6 +150,7 @@ class UrlChecksRepository:
             )
 
     def save_url_check(self, id, status_code, h1, title, description):
+        """Saves a new URL check and return its ID."""
         created_at = date.today()
         with DatabaseConnection(self.database_url) as conn:
             return CRUDClient(conn).execute(
