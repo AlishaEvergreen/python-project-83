@@ -14,7 +14,11 @@ from flask import (
     url_for,
 )
 
-from page_analyzer.repository import UrlChecksRepository, UrlsRepository
+from page_analyzer.repository import (
+    DatabaseConnection,
+    UrlChecksRepository,
+    UrlsRepository,
+)
 from page_analyzer.utils import normalize_url, parse_html_metadata, validate
 
 load_dotenv()
@@ -24,8 +28,8 @@ app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
 app.config["DATABASE_URL"] = os.getenv("DATABASE_URL")
 
 DATABASE_URL = app.config["DATABASE_URL"]
-URLS_REPO = UrlsRepository(DATABASE_URL)
-CHECKS_REPO = UrlChecksRepository(DATABASE_URL)
+URLS_REPO = UrlsRepository()
+CHECKS_REPO = UrlChecksRepository()
 
 
 @app.errorhandler(404)
@@ -51,12 +55,12 @@ def home():
 @app.route('/urls/<int:id>')
 def show_url(id):
     """Renders a page with details for a specific URL."""
-    url_data = URLS_REPO.get_url_data_by_id(id)
+    with DatabaseConnection(DATABASE_URL) as conn:
+        url_data = URLS_REPO.get_url_data_by_id(conn, id)
+        if not url_data:
+            abort(404)
+        checks_data = CHECKS_REPO.get_checks_by_id(conn, id)
 
-    if not url_data:
-        abort(404)
-
-    checks_data = CHECKS_REPO.get_checks_by_id(id)
     messages = get_flashed_messages(with_categories=True)
 
     return render_template(
@@ -70,7 +74,9 @@ def show_url(id):
 @app.route('/urls')
 def show_urls():
     """Render a page with a list of all URLs and their latest checks."""
-    urls = CHECKS_REPO.get_urls_with_last_check()
+    with DatabaseConnection(DATABASE_URL) as conn:
+        urls = CHECKS_REPO.get_urls_with_last_check(conn)
+
     messages = get_flashed_messages(with_categories=True)
 
     return render_template('layout_urls.html', urls=urls, messages=messages)
@@ -87,12 +93,14 @@ def create_url():
         session['error'] = error
         return render_template('index.html', url=url_data, error=error), 422
 
-    existing_url = URLS_REPO.get_url_data_by_name(normalized_url)
-    if existing_url:
-        flash("Страница уже существует", "info")
-        return redirect(url_for('show_url', id=existing_url['id']))
+    with DatabaseConnection(DATABASE_URL) as conn:
+        existing_url = URLS_REPO.get_url_data_by_name(conn, normalized_url)
+        if existing_url:
+            flash("Страница уже существует", "info")
+            return redirect(url_for('show_url', id=existing_url['id']))
 
-    url_id = URLS_REPO.save_url({'url': normalized_url})
+        url_id = URLS_REPO.save_url(conn, {'url': normalized_url})
+
     flash('Страница успешно добавлена', 'success')
     return redirect(url_for('show_url', id=url_id))
 
@@ -100,23 +108,25 @@ def create_url():
 @app.post('/urls/<int:id>/checks')
 def check_url(id):
     """Performs a check on a URL and saves the results."""
-    url = URLS_REPO.get_url_data_by_id(id)
+    with DatabaseConnection(DATABASE_URL) as conn:
+        url = URLS_REPO.get_url_data_by_id(conn, id)
 
-    try:
-        response = requests.get(url['name'], timeout=10)
-        response.raise_for_status()
+        try:
+            response = requests.get(url['name'], timeout=10)
+            response.raise_for_status()
 
-        h1, title, description = parse_html_metadata(response.text)
+            h1, title, description = parse_html_metadata(response.text)
 
-        CHECKS_REPO.save_url_check(
-            id,
-            response.status_code,
-            h1,
-            title,
-            description
-        )
-        flash("Страница успешно проверена", "success")
-    except requests.exceptions.RequestException:
-        flash("Произошла ошибка при проверке", "danger")
+            CHECKS_REPO.save_url_check(
+                conn,
+                id,
+                response.status_code,
+                h1,
+                title,
+                description
+            )
+            flash("Страница успешно проверена", "success")
+        except requests.exceptions.RequestException:
+            flash("Произошла ошибка при проверке", "danger")
 
     return redirect(url_for('show_url', id=id))

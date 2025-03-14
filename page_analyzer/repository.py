@@ -63,60 +63,50 @@ class CRUDClient:
 
 class UrlsRepository:
     """Repository for managing URLs in the database."""
-    def __init__(self, database_url):
-        self.database_url = database_url
-
-    def get_entities(self):
+    def get_entities(self, conn):
         """Fetches all URLs, ordered by ID and creation date."""
-        with DatabaseConnection(self.database_url) as conn:
-            return CRUDClient(conn).execute(
-                """
-                SELECT * FROM urls
-                ORDER BY id DESC, created_at DESC
-                """,
-                fetch_all=True
-            )
+        return CRUDClient(conn).execute(
+            """
+            SELECT * FROM urls
+            ORDER BY id DESC, created_at DESC
+            """,
+            fetch_all=True
+        )
 
-    def get_url_data_by_id(self, id):
+    def get_url_data_by_id(self, conn, id):
         """Fetches URL data by its ID."""
-        with DatabaseConnection(self.database_url) as conn:
-            return CRUDClient(conn).execute(
-                "SELECT * FROM urls WHERE id = %s",
-                (id,),
-                fetch_one=True
-            )
+        return CRUDClient(conn).execute(
+            "SELECT * FROM urls WHERE id = %s",
+            (id,),
+            fetch_one=True
+        )
 
-    def get_url_data_by_name(self, url):
+    def get_url_data_by_name(self, conn, url):
         """Fetches URL data by its name."""
-        with DatabaseConnection(self.database_url) as conn:
-            return CRUDClient(conn).execute(
-                "SELECT * FROM urls WHERE name = %s",
-                (url,),
-                fetch_one=True
-            )
+        return CRUDClient(conn).execute(
+            "SELECT * FROM urls WHERE name = %s",
+            (url,),
+            fetch_one=True
+        )
 
-    def save_url(self, url):
+    def save_url(self, conn, url):
         """Saves a new URL and return its ID."""
         created_at = date.today()
-        with DatabaseConnection(self.database_url) as conn:
-            return CRUDClient(conn).execute(
-                """
-                INSERT INTO urls (name, created_at)
-                VALUES (%s, %s)
-                RETURNING id
-                """,
-                (url["url"], created_at),
-                fetch_id=True,
-                commit=True,
-            )
+        return CRUDClient(conn).execute(
+            """
+            INSERT INTO urls (name, created_at)
+            VALUES (%s, %s)
+            RETURNING id
+            """,
+            (url["url"], created_at),
+            fetch_id=True,
+            commit=True,
+        )
 
 
 class UrlChecksRepository:
     """Repository for managing URL checks in the database."""
-    def __init__(self, database_url):
-        self.database_url = database_url
-
-    def get_urls_with_last_check(self):
+    def get_urls_with_last_check(self, conn):
         """Fetches URLs with their latest check data."""
         query_urls = "SELECT id, name FROM urls ORDER BY id DESC"
         query_checks = """
@@ -125,10 +115,9 @@ class UrlChecksRepository:
         ORDER BY url_id, created_at DESC
         """
 
-        with DatabaseConnection(self.database_url) as conn:
-            crud = CRUDClient(conn)
-            urls = crud.execute(query_urls, fetch_all=True)
-            checks = crud.execute(query_checks, fetch_all=True)
+        crud = CRUDClient(conn)
+        urls = crud.execute(query_urls, fetch_all=True)
+        checks = crud.execute(query_checks, fetch_all=True)
 
         checks_dict = {check["url_id"]: check for check in checks}
         for url in urls:
@@ -137,31 +126,29 @@ class UrlChecksRepository:
             url["created_at"] = check["created_at"] if check else None
         return urls
 
-    def get_checks_by_id(self, url_id):
+    def get_checks_by_id(self, conn, url_id):
         """Fetches all checks for a URL by its ID."""
-        with DatabaseConnection(self.database_url) as conn:
-            return CRUDClient(conn).execute(
-                """
-                SELECT * FROM url_checks
-                WHERE url_id = %s
-                ORDER BY id DESC, created_at DESC
-                """,
-                (url_id,), fetch_all=True
-            )
+        return CRUDClient(conn).execute(
+            """
+            SELECT * FROM url_checks
+            WHERE url_id = %s
+            ORDER BY id DESC, created_at DESC
+            """,
+            (url_id,), fetch_all=True
+        )
 
-    def save_url_check(self, id, status_code, h1, title, description):
+    def save_url_check(self, conn, id, status_code, h1, title, description):
         """Saves a new URL check and return its ID."""
         created_at = date.today()
-        with DatabaseConnection(self.database_url) as conn:
-            return CRUDClient(conn).execute(
-                """
-                INSERT INTO url_checks (
-                    url_id, status_code, h1, title, description, created_at
-                )
-                VALUES (%s, %s, %s, %s, %s, %s)
-                RETURNING id
-                """,
-                [id, status_code, h1, title, description, created_at],
-                fetch_id=True,
-                commit=True,
+        return CRUDClient(conn).execute(
+            """
+            INSERT INTO url_checks (
+                url_id, status_code, h1, title, description, created_at
             )
+            VALUES (%s, %s, %s, %s, %s, %s)
+            RETURNING id
+            """,
+            [id, status_code, h1, title, description, created_at],
+            fetch_id=True,
+            commit=True,
+        )
