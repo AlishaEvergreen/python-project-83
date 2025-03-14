@@ -63,16 +63,6 @@ class CRUDClient:
 
 class UrlsRepository:
     """Repository for managing URLs in the database."""
-    def get_entities(self, conn):
-        """Fetches all URLs, ordered by ID and creation date."""
-        return CRUDClient(conn).execute(
-            """
-            SELECT * FROM urls
-            ORDER BY id DESC, created_at DESC
-            """,
-            fetch_all=True
-        )
-
     def get_url_data_by_id(self, conn, id):
         """Fetches URL data by its ID."""
         return CRUDClient(conn).execute(
