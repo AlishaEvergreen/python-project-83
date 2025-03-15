@@ -13,6 +13,6 @@ CREATE TABLE url_checks (
     status_code int,
     h1 varchar(255),
     title varchar(255),
-    description text,
+    description varchar(255),
     created_at date DEFAULT CURRENT_TIMESTAMP
 );
