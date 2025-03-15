@@ -99,8 +99,8 @@ class UrlsRepository:
     def save_url(self, conn, url):
         """Saves a new URL and return its ID."""
         return CRUDClient(conn).execute(
-            "INSERT INTO urls (name) VALUES %s RETURNING id",
-            (url["url"]),
+            "INSERT INTO urls (name) VALUES (%s) RETURNING id",
+            (url["url"],),
             output_mode="fetch_id",
             commit=True,
         )
