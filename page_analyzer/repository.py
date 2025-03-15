@@ -90,11 +90,7 @@ class UrlsRepository:
         """Saves a new URL and return its ID."""
         created_at = date.today()
         return CRUDClient(conn).execute(
-            """
-            INSERT INTO urls (name, created_at)
-            VALUES (%s, %s)
-            RETURNING id
-            """,
+            " INSERT INTO urls (name) VALUES (%s) RETURNING id",
             (url["url"], created_at),
             output_mode="fetch_id",
             commit=True,
@@ -137,16 +133,15 @@ class UrlChecksRepository:
 
     def save_url_check(self, conn, id, status_code, h1, title, description):
         """Saves a new URL check and return its ID."""
-        created_at = date.today()
         return CRUDClient(conn).execute(
             """
             INSERT INTO url_checks (
-                url_id, status_code, h1, title, description, created_at
+                url_id, status_code, h1, title, description,
             )
-            VALUES (%s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s)
             RETURNING id
             """,
-            (id, status_code, h1, title, description, created_at),
+            (id, status_code, h1, title, description),
             output_mode="fetch_id",
             commit=True,
         )
