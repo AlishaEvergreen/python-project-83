@@ -145,7 +145,7 @@ class UrlChecksRepository:
         return CRUDClient(conn).execute(
             """
             INSERT INTO url_checks (
-                url_id, status_code, h1, title, description,
+                url_id, status_code, h1, title, description
             )
             VALUES (%s, %s, %s, %s, %s)
             RETURNING id
