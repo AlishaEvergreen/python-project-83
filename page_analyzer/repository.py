@@ -1,4 +1,3 @@
-from datetime import date
 from typing import Literal
 
 import psycopg2
@@ -72,26 +71,36 @@ class CRUDClient:
 
 class UrlsRepository:
     """Repository for managing URLs in the database."""
+    def get_entities(self, conn, limit=100, offset=0):
+        """Fetches all URLs, ordered by ID and creation date."""
+        return CRUDClient(conn).execute(
+            """
+            SELECT * FROM urls
+            ORDER BY id DESC, created_at DESC LIMIT %s OFFSET %s
+            """,
+            (limit, offset),
+            output_mode="fetch_all",
+        )
+
     def get_url_data_by_id(self, conn, id):
         """Fetches URL data by its ID."""
         return CRUDClient(conn).execute(
-            "SELECT * FROM urls WHERE id = %s",
+            "SELECT * FROM urls WHERE id=%s",
             (id,),
         )
 
     def get_url_data_by_name(self, conn, url):
         """Fetches URL data by its name."""
         return CRUDClient(conn).execute(
-            "SELECT * FROM urls WHERE name = %s",
+            "SELECT * FROM urls WHERE name=%s",
             (url,),
         )
 
     def save_url(self, conn, url):
         """Saves a new URL and return its ID."""
-        created_at = date.today()
         return CRUDClient(conn).execute(
-            " INSERT INTO urls (name) VALUES (%s) RETURNING id",
-            (url["url"], created_at),
+            "INSERT INTO urls (name) VALUES %s RETURNING id",
+            (url["url"]),
             output_mode="fetch_id",
             commit=True,
         )
@@ -124,7 +133,7 @@ class UrlChecksRepository:
         return CRUDClient(conn).execute(
             """
             SELECT * FROM url_checks
-            WHERE url_id = %s
+            WHERE url_id=%s
             ORDER BY id DESC, created_at DESC
             """,
             (url_id,),
