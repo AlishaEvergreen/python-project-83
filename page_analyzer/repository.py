@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Literal
 
 import psycopg2
 from psycopg2 import extensions
@@ -12,7 +13,7 @@ class DatabaseConnection:
         self.conn = None
 
     def __enter__(self):
-        if self.conn is None:
+        if not self.conn:
             self.conn = psycopg2.connect(**self.connection_params)
         return self.conn
 
@@ -27,8 +28,11 @@ class CRUDClient:
         self.conn = conn
 
     def execute(
-        self, query, params=None, fetch_one=False,
-        fetch_all=False, fetch_id=False, commit=False,
+        self, query, params=None,
+        output_mode: Literal[
+            "fetch_one", "fetch_all", "fetch_id"
+        ] = "fetch_one",
+        commit=False,
     ):
         """
         Executes a SQL query and returns the result.
@@ -36,23 +40,28 @@ class CRUDClient:
         Args:
             query (str): SQL query to execute.
             params (tuple, optional): Query parameters.
-            fetch_one (bool): Return a single row.
-            fetch_all (bool): Return all rows.
-            fetch_id (bool): Return the ID of the inserted row.
+            output_mode (Literal["fetch_one", "fetch_all", "fetch_id"]):
+                Determines how to fetch results.
+                - "fetch_one": Return a single row.
+                - "fetch_all": Return all rows.
+                - "fetch_id": Return the ID of the inserted row.
             commit (bool): Commit the transaction if True.
 
         Returns:
-            Result of the query (dict, list, or int).
+            Result of the query:
+                - dict (if fetch_one)
+                - list of dicts (if fetch_all)
+                - int (if fetch_id)
         """
         with self.conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(query, params or ())
 
             result = None
-            if fetch_one:
+            if output_mode == "fetch_one":
                 result = cur.fetchone()
-            elif fetch_all:
+            elif output_mode == "fetch_all":
                 result = cur.fetchall()
-            elif fetch_id:
+            elif output_mode == "fetch_id":
                 result = cur.fetchone()["id"]
 
             if commit:
@@ -68,7 +77,6 @@ class UrlsRepository:
         return CRUDClient(conn).execute(
             "SELECT * FROM urls WHERE id = %s",
             (id,),
-            fetch_one=True
         )
 
     def get_url_data_by_name(self, conn, url):
@@ -76,7 +84,6 @@ class UrlsRepository:
         return CRUDClient(conn).execute(
             "SELECT * FROM urls WHERE name = %s",
             (url,),
-            fetch_one=True
         )
 
     def save_url(self, conn, url):
@@ -89,7 +96,7 @@ class UrlsRepository:
             RETURNING id
             """,
             (url["url"], created_at),
-            fetch_id=True,
+            output_mode="fetch_id",
             commit=True,
         )
 
@@ -106,8 +113,8 @@ class UrlChecksRepository:
         """
 
         crud = CRUDClient(conn)
-        urls = crud.execute(query_urls, fetch_all=True)
-        checks = crud.execute(query_checks, fetch_all=True)
+        urls = crud.execute(query_urls, output_mode="fetch_all")
+        checks = crud.execute(query_checks, output_mode="fetch_all")
 
         checks_dict = {check["url_id"]: check for check in checks}
         for url in urls:
@@ -124,7 +131,8 @@ class UrlChecksRepository:
             WHERE url_id = %s
             ORDER BY id DESC, created_at DESC
             """,
-            (url_id,), fetch_all=True
+            (url_id,),
+            output_mode="fetch_all",
         )
 
     def save_url_check(self, conn, id, status_code, h1, title, description):
@@ -138,7 +146,7 @@ class UrlChecksRepository:
             VALUES (%s, %s, %s, %s, %s, %s)
             RETURNING id
             """,
-            [id, status_code, h1, title, description, created_at],
-            fetch_id=True,
+            (id, status_code, h1, title, description, created_at),
+            output_mode="fetch_id",
             commit=True,
         )
